@@ -685,7 +685,7 @@ exports.updateTaskStatus = async (req, res) => {
     }
 
    
-    if (currentStatus === "In Progress" && newStatus === "Completed") {
+    if (currentStatus === "Testing" && newStatus === "Completed") {
         if (!task.actualEndDate) {
             task.actualEndDate = new Date();
         }

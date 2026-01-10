@@ -3,6 +3,8 @@ const User = require("../models/Users");
 const Task = require("../models/task");
 const Sprint = require("../models/sprint");
 const Employee = require("../models/Employees");
+
+
 const calculateAvailableHours = (startDate, endDate) => {
   if (!startDate || !endDate) return 0;
 
@@ -342,4 +344,56 @@ exports.getProjectSummary = async (req, res) => {
     data: project
   });
 };
+
+
+exports.autoCompleteProject = async (req, res) => {
+    try {
+        const projectId = req.params.id;
+
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({
+                status: "fail",
+                message: "Project not found"
+            });
+        }
+
+        
+        const tasks = await Task.find({ projectId });
+
+        const incompleteTasks = tasks.filter(
+            task => task.status !== "Completed"
+        );
+
+        if (incompleteTasks.length > 0) {
+            return res.status(400).json({
+                status: "fail",
+                message: "All tasks must be completed before completing the project"
+            });
+        }
+
+       
+        project.status = "completed";
+        project.actualEndDate = new Date();
+
+        await project.save();
+
+        console.log(
+            `📁 Project ${project.name} completed on ${project.actualEndDate}`
+        );
+
+        res.status(200).json({
+            status: "success",
+            actualEndDate: project.actualEndDate
+        });
+
+    } catch (err) {
+        console.error("Auto complete project error:", err);
+        res.status(500).json({
+            status: "error",
+            message: "Something went wrong"
+        });
+    }
+};
+
 

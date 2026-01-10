@@ -21,5 +21,6 @@ router.get("/:id", protect, projectController.getProjectDetails);
 router.get("/:id/summary", protect, projectController.getProjectSummary);
 
 router.patch("/:id", protect, restrictTo("admin"), projectController.updateProject)
+router.patch("/auto-complete/:id",protect,restrictTo("admin","manager"),projectController.autoCompleteProject)
 router.delete("/:id", protect, restrictTo("admin"), projectController.deleteProject)
 module.exports = router;

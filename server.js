@@ -11,6 +11,7 @@ const projectRoutes =require("./routes/projectRoute.js");
 const taskRoutes =require("./routes/taskRoutes.js");
 const sprintRoutes = require("./routes/sprintRoutes.js")
 const dashboardRoutes = require("./routes/dashboardRoutes.js");
+const reportRoutes = require("./routes/reportRoutes.js");
 
 const app = express();
 app.use(cors({
@@ -45,6 +46,7 @@ app.use("/api/projects",projectRoutes);
 app.use("/api/tasks",taskRoutes);
 app.use("/api/sprints",sprintRoutes);
 app.use("/api/dashboard",dashboardRoutes);
+app.use("/api/reports", reportRoutes);
 const port = process.env.PORT ||3000;
 app.listen(port, () => {
   console.log(`App running on port ${port}...`);

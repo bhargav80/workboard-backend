@@ -598,3 +598,34 @@ exports.getSprintDetails = async (req, res) => {
         });
     }
 };
+
+
+exports.getSprintsByProject = async (req, res) => {
+    try {
+        const { id: projectId } = req.params;
+
+        if (!projectId) {
+            return res.status(400).json({
+                status: "fail",
+                message: "Project ID is required"
+            });
+        }
+
+        const sprints = await Sprint.find({ projectId })
+            .sort({ startDate: 1 })
+            .lean();
+
+        return res.status(200).json({
+            status: "success",
+            results: sprints.length,
+            data: sprints
+        });
+
+    } catch (err) {
+        console.error("Get sprints by project error:", err);
+        return res.status(500).json({
+            status: "error",
+            message: "Server error"
+        });
+    }
+};

@@ -6,6 +6,12 @@ const { protect, restrictTo } = require("../middlewares/authMiddleware");
 
 router.get("/",protect, restrictTo("admin", "manager","employee"),sprintController.getSprints)
 router.get("/:id",protect, restrictTo("admin", "manager","employee"),sprintController.getSprintDetails)
+router.get(
+    "/project/:id",
+    protect,
+    restrictTo("admin", "manager", "employee"),
+    sprintController.getSprintsByProject
+);
 
 router.post(
   "/",
