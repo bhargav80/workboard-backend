@@ -19,7 +19,8 @@ app.use(cors({
     "http://localhost:50342",
     process.env.FRONTEND_URL
   ],
-  credentials: true
+  credentials: true,
+   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 dotenv.config({ path: './config.env' });
