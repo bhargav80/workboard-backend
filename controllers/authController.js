@@ -1,6 +1,8 @@
 const User = require("../models/Users");
 const Employee = require("../models/Employees")
 const { signToken } = require("../utils/jwt");
+const crypto = require("crypto");
+const sendEmail = require("../utils/sendMail");
 
 exports.login = async (req, res) => {
     try {
