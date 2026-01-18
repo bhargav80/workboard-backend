@@ -2,7 +2,7 @@ const User = require("../models/Users");
 const Employee = require("../models/Employees")
 const { signToken } = require("../utils/jwt");
 const crypto = require("crypto");
-const sendEmail = require("../utils/sendMail");
+const sendMail = require("../utils/sendMail");
 
 exports.login = async (req, res) => {
     try {
@@ -146,5 +146,103 @@ exports.updateUserRole = async (req, res) => {
       message: "Role update failed",
       error: err.message
     });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    user.passwordResetToken = hashedToken;
+    user.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 min
+
+    await user.save({ validateBeforeSave: false });
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    console.log(resetToken)
+    const message = `
+      <h2>Password Reset</h2>
+      <p>You requested to reset your password.</p>
+      <a href="${resetUrl}" target="_blank">Reset Password</a>
+      <p>This link expires in 15 minutes.</p>
+    `;
+
+    await sendMail({
+      email: user.email,
+      subject: "Password Reset Request",
+      message
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset email sent"
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password, passwordConfirm } = req.body;
+
+    if (!password || !passwordConfirm) {
+      return res.status(400).json({ message: "Password fields are required" });
+    }
+
+    if (password !== passwordConfirm) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
+
+    
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+   
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid or expired reset token"
+      });
+    }
+
+    
+    user.password = password;
+
+    
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successful"
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
